@@ -74,16 +74,45 @@ The **Mode** button toggles between different LED modes to show port status, dup
 
 ### 1.1.4 Recovering from a System Crash
 If the operating system is missing or damaged, you can access the switch through the boot loader via the console:
-1. Connect a PC to the switch via console.
-2. Reconnect the power and hold the **Mode** button.
-3. Release the **Mode** button when the **System** LED turns green.
-4. Use the boot loader to view or set the BOOT environment variable and load a new IOS image.
+1. Connect a PC to the switch via console. Configure terminal emulation software to connect to the switch.
+2. Unplug the switch power cord.
+3. Reconnect the power cord to the switch and, within 15 seconds, press and hold down the Mode button while the System LED is still flashing green.
+4. Continue pressing the Mode button until the System LED turns briefly amber and then solid green; then release the Mode button.
+5. The boot loader switch: prompt appears in the terminal emulation software on the PC.
+
+            switch: set #view the path of the switch BOOT environment variable type
+            switch: flash_init #initialize the flash file system to view the current files in flash
+
+            switch: dir flash: #view the directories and files in flash
+            Directory of flash:/
+                2  -rwx  11834846  <date>               c2960-lanbasek9-mz.150-2.SE8.bin
+                3  -rwx  2072      <date>               multiple-fs
+   
+            switch: BOOT=flash:c2960-lanbasek9-mz.150-2.SE8.bin #to change the BOOT environment variable path the switch uses to load the new IOS in flash
+            switch: set #verify the new BOOT environment variable path
+            BOOT=flash:c2960-lanbasek9-mz.150-2.SE8.bin
+            (output omitted)
+            switch: boot #load the new IOS type
 
 ### 1.1.5 Switch Management Access
-To enable remote management, configure a **Switch Virtual Interface (SVI)** with an IP address and subnet mask. A default gateway is needed to manage the switch from a different network.
+To enable remote management, configure a **Switch Virtual Interface (SVI)** with an IP address and subnet mask. The SVI is a virtual interface, not a physical port on the switch. A default gateway is needed to manage the switch from a different network.
 
 ### 1.1.6 Switch SVI Configuration Example
-By default, VLAN 1 is the management interface, but best practices suggest using a different VLAN, such as VLAN 99. To configure VLAN 99 with an IPv4 and IPv6 address:
+By default, VLAN 1 is the management interface, but best practices suggest using a different VLAN, such as VLAN 99.
+
+**Step1** Configure the Management Interface
+From VLAN interface configuration mode, an IPv4 address and subnet mask is applied to the management SVI of the switch. Specifically, SVI VLAN 99 will be assigned the 172.17.99.11/24 IPv4 address and the 2001:db8:acad:99::1/64 IPv6 address as shown.
+
+| Task                                            | IOS Commands            |
+|-------------------------------------------------|------------------------|
+| Enter global congifuration mode                 | S1# conf t    |
+| Enter infterface configuration mode for the SVI | S1(config)# int vlan 99 |
+| Configure the management interface IPv4 address | S1(config-if)# ip address 172.17.99.11 255.255.255.0 |
+| Configure the management interface IPv6 address | S1(config-if)# ipv6 address 2001:db8:acad:99::11/64 |
+| Enable the management interface                 | S1(config-if)# no shutdown    |
+| Return to the privileged EXEC mode | S1(config-if)# end |
+| Save the running config to the startup config | S1(config-if)# end |
+
 ```shell
 S1(config)# interface vlan 99
 S1(config-if)# ip address 172.17.99.11 255.255.255.0
