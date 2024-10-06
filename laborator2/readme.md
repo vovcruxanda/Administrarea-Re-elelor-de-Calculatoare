@@ -228,10 +228,10 @@ S1(config-if)# end
 
 This returns the port to static access mode, restricting it to a single VLAN (VLAN 1 by default).
 
-### 3.5 Dynamic Trunking Protocol (DTP)
+## 3.5 Dynamic Trunking Protocol (DTP)
 
-#### 3.5.1 Introduction to DTP
-Dynamic Trunking Protocol (DTP) is a proprietary Cisco protocol that automates the negotiation of trunking between Cisco switches. DTP facilitates quick and efficient configuration of trunk links by allowing switches to automatically determine if they should operate in trunk or access mode.
+### 3.5.1 Introduction to DTP
+Dynamic Trunking Protocol (DTP) is a Cisco protocol that automates the negotiation of trunking between Cisco switches. DTP facilitates quick and efficient configuration of trunk links by allowing switches to automatically determine if they should operate in trunk or access mode.
 
 - **Trunking Modes:** An interface can be set to:
   - **Trunking:** Always trunk.
@@ -252,23 +252,26 @@ S1(config-if)# switchport mode dynamic auto
 
 If both ends of a trunk are set to `switchport mode dynamic auto`, the ports will not negotiate a trunk and will remain in access mode, leading to an inactive trunk link. Hence, it is often recommended to set trunk ports explicitly to trunk mode for clarity.
 
-#### 3.5.2 Negotiated Interface Modes
+### 3.5.2 Negotiated Interface Modes
 The `switchport mode` command can take several options, as shown below:
 
 ```bash
 Switch(config-if)# switchport mode { access | dynamic { auto | desirable } | trunk }
 ```
-- **Access:** The port is set to access mode.
-- **Dynamic Auto:** The port will negotiate trunking if the neighboring port is set to trunking mode.
+- **Access:** The port is set to access mode and negotiates to convert the link into a nontrunk link.
+- **Dynamic Auto:** Makes the interface able to convert the link to a trunk link. The port will negotiate trunking if the neighboring port is set to trunking mode.
 - **Dynamic Desirable:** The port actively attempts to negotiate trunking.
 - **Trunk:** The port is forced into trunk mode.
 
 To prevent DTP negotiation, the command `switchport nonegotiate` is used. This command can only be applied if the port is set to either access or trunk mode, requiring manual configuration on the neighboring interface to establish a trunk link.
 
-#### 3.5.3 Results of a DTP Configuration
+### 3.5.3 Results of a DTP Configuration
 The results of DTP configuration options are typically summarized in a table showing the states of the interfaces on either side of a trunk link. It's advisable to configure trunk links statically whenever possible to avoid any negotiation issues.
 
-#### 3.5.4 Verify DTP Mode
+![image](https://github.com/user-attachments/assets/f79831f1-871b-4a3a-80a2-05ffd7f65121)
+
+
+### 3.5.4 Verify DTP Mode
 To check the current DTP mode of an interface, the following command can be used:
 
 ```bash
@@ -293,7 +296,7 @@ Enabled: yes
 In STP: no
 ```
 
-#### Best Practices
+### Best Practices
 - **For trunk links:** Configure interfaces to `trunk` mode and use `nonegotiate` to avoid any DTP frame generation, ensuring clarity in trunk configurations.
 - **For access links:** Disable DTP to prevent unwanted trunk negotiations on interfaces not intended to be trunk ports.
 
