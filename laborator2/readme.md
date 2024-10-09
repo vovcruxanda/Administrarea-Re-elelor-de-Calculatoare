@@ -297,17 +297,29 @@ In STP: no
 ```
 
 Beneficiile VLAN-urilor
+
 Securitate mai bună: VLAN-urile ajută la separarea traficului în rețea, astfel încât informațiile confidențiale să fie protejate mai bine.
+
 Reducerea traficului inutil: Mesajele se trimit doar în cadrul VLAN-ului respectiv, fără a încărca toată rețeaua.
+
 Gestionare ușoară: Administratorii pot organiza rețeaua mai ușor, fără să schimbe fizic cablurile sau dispozitivele.
+
 Separarea logică: Poți crea VLAN-uri pentru diferite departamente dintr-o companie, ca să controlezi accesul mai ușor.
+
 Tipuri de VLAN-uri
+
 VLAN de date: Pentru traficul de zi cu zi între computere și alte dispozitive.
+
 VLAN vocal: Special pentru apeluri telefonice, pentru o calitate mai bună.
+
 VLAN nativ: Pentru traficul care nu este marcat cu un anumit VLAN.
+
 VLAN de management: Pentru administrarea dispozitivelor de rețea.
+
 Private VLAN (PVLAN): Izolează dispozitivele între ele în același VLAN.
+
 Trunk
+
 Un trunk este o conexiune între switch-uri sau între un switch și un router care transportă date pentru mai multe VLAN-uri. Trunk-ul adaugă o etichetă fiecărui pachet de date pentru a ști din ce VLAN provine, astfel încât datele să ajungă unde trebuie.
 
 ### Best Practices
