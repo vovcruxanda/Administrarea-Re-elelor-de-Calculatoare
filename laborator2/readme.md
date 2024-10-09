@@ -308,15 +308,13 @@ Separarea logică: Poți crea VLAN-uri pentru diferite departamente dintr-o comp
 
 Tipuri de VLAN-uri
 
-VLAN de date: Pentru traficul de zi cu zi între computere și alte dispozitive.
+VLAN de date: Acesta este cel mai comun tip de VLAN și este utilizat pentru a transporta traficul de date al utilizatorilor obișnuiți. Toate comunicațiile dintre computere, servere și alte dispozitive se realizează în acest VLAN.
 
-VLAN vocal: Special pentru apeluri telefonice, pentru o calitate mai bună.
+VLAN vocal: Acest VLAN este dedicat traficului VoIP (Voice over IP), permițând prioritizarea pachetelor de voce pentru a asigura o calitate mai bună a apelurilor și a reduce latența.
 
-VLAN nativ: Pentru traficul care nu este marcat cu un anumit VLAN.
+VLAN nativ: VLAN-ul nativ este configurat pe un port de trunk pentru a primi traficul care nu este etichetat cu un VLAN specific. De obicei, este utilizat pentru a gestiona comunicațiile neetichetate între dispozitivele din rețea.
 
-VLAN de management: Pentru administrarea dispozitivelor de rețea.
-
-Private VLAN (PVLAN): Izolează dispozitivele între ele în același VLAN.
+VLAN de management: Acest VLAN este folosit pentru a gestiona dispozitivele din rețea, cum ar fi switch-urile și routerele. Prin separarea managementului rețelei într-un VLAN dedicat, se asigură că numai utilizatorii autorizați pot accesa interfețele de administrare.
 
 Trunk
 
