@@ -1,0 +1,216 @@
+# 5.1 Purpose of STP
+
+## 5.1.1 Redundancy in Layer 2 Switched Networks
+Redundancy provides backup paths to ensure network functionality if one path fails. However, extra paths can lead to problems like loops, where data continuously circulates without reaching its destination. Ethernet networks need a loop-prevention mechanism to avoid these physical and logical Layer 2 loops. A loop-free topology with a single path between any two devices is essential to prevent frame propagation until a link is disrupted and breaks the loop.
+
+## 5.1.2 Spanning Tree Protocol (STP)
+STP prevents loops by creating a loop-free network. It finds the best path for data and blocks other unnecessary paths, enabling redundancy without causing data loops.
+
+## 5.1.3 STP Recalculation
+If a network link fails, STP recalculates the optimal data path and adjusts the network to ensure continued data flow.
+
+## 5.1.4 Issues with Redundant Switch Links
+Without STP, multiple device paths cause loops, overloading switches and degrading network performance. Ethernet lacks a Layer 3 packet-limiting mechanism, making STP essential for loop prevention. A Layer 2 loop can cause MAC table instability, link saturation, and high CPU usage on devices, rendering the network unusable.
+
+## 5.1.5 Layer 2 Loops
+Without STP, data may get trapped in a loop, circulating the network indefinitely, which overloads the network and causes instability.
+
+## 5.1.6 Broadcast Storm
+A broadcast storm floods the network with excessive broadcast packets, often caused by hardware issues or Layer 2 loops. In Layer 2, broadcast messages (e.g., ARP requests) can continuously circulate, consuming resources and leading to network crashes. STP blocks certain paths to prevent loops and broadcast storms.
+
+## 5.1.7 The Spanning Tree Algorithm (STA)
+STP uses an algorithm developed by Radia Perlman to create a loop-free network. It designates a "root bridge" and calculates the best path, blocking any paths that may create loops.
+
+---
+
+# 5.2 STP Operations Overview
+STP uses a four-step process to establish a loop-free topology by assigning switch and port roles.
+
+- **Elect the Root Bridge**: Switch with the lowest Bridge ID (BID) is elected as the Root Bridge, serving as a reference for all path calculations.
+- **Elect Root Ports**: Non-root switches select the port with the lowest path cost to the root bridge as the Root Port.
+- **Elect Designated Ports**: One port per network segment is designated to have the lowest path cost to the root bridge.
+- **Elect Alternate (Blocked) Ports**: Ports that aren't Root or Designated are blocked to prevent loops.
+
+---
+
+## 5.2.1 Steps to a Loop-Free Topology
+1. **Root Bridge Election**: All switches consider themselves root initially and exchange BPDUs to decide on the root bridge.
+2. **Port Roles**: Post Root Bridge election, switches assign each port a role based on its distance to the Root Bridge.
+
+### Bridge Protocol Data Units (BPDUs)
+BPDUs carry STP information:
+- **Bridge ID (BID)**: Combination of Bridge Priority, Extended System ID, and MAC Address.
+- **Root ID**: BID of the Root Bridge.
+- **Path Cost**: Used to determine the best path to the Root Bridge.
+
+---
+
+## 5.2.2 Electing the Root Bridge
+Switches send BPDUs with their BID; the lowest BID becomes the Root Bridge. If priorities match, the switch with the lowest MAC address wins. Root Bridge serves as the reference for all paths.
+
+---
+
+## 5.2.3 Impact of Default BIDs
+Switches typically have a priority of 32768. If priorities are the same, the MAC address determines the Root Bridge. Adjusting switch priority can influence the root bridge selection.
+
+---
+
+## 5.2.4 Determine the Root Path Cost
+Each switch calculates the Root Path Cost, the total port cost to reach the Root Bridge. Paths with the lowest cost are preferred, with other paths blocked to avoid loops.
+
+---
+
+## 5.2.5 Elect Root Ports
+Non-root switches select the port with the lowest cost to the Root Bridge as the Root Port. If there are multiple paths, the one with the lowest cost becomes the Root Port.
+
+---
+
+## 5.2.6 Elect Designated Ports
+For each network segment, one port with the lowest Root Path Cost is designated. Other ports are blocked to avoid loops.
+
+---
+
+# 5.3 Evolution of STP
+
+## 5.3.1 Different Versions of STP
+STP has evolved to meet modern network needs. IEEE 802.1D-2004 introduced Rapid STP (RSTP), improving convergence times. Cisco uses PVST+, allowing independent RSTP per VLAN.
+
+---
+
+## 5.3.2 RSTP Concepts
+RSTP, IEEE 802.1w, is compatible with 802.1D STP but improves convergence times, allowing ports to transition to a forwarding state quickly.
+
+---
+
+## 5.3.3 RSTP Port States and Roles
+STP and RSTP share port roles but handle states differently:
+- **STP**: Ports can be Disabled, Blocking, Listening, Learning, or Forwarding.
+- **RSTP**: States include Discarding, Learning, and Forwarding.
+
+---
+
+## 5.3.4 PortFast and BPDU Guard
+PortFast allows immediate transition to forwarding on access ports, preventing DHCP issues. BPDU Guard prevents loops by shutting down ports upon receiving a BPDU.
+
+---
+
+## 5.3.5 Alternatives to STP
+Complex networks have alternatives like Layer 3 switching, MLAG, SPB, and TRILL, which enhance performance and scalability in larger networks.
+
+Here's a simplified overview of EtherChannel and its key components:
+
+---
+
+# 6.1 EtherChannel Operation
+
+## 6.1.1 Link Aggregation
+When devices need more bandwidth or redundancy, adding multiple links between them can help. However, **Spanning Tree Protocol (STP)** will block extra links to avoid network loops. EtherChannel allows redundant links without STP blocking them, combining multiple Ethernet links into a single logical link. This boosts fault-tolerance, load sharing, and bandwidth.
+
+---
+
+## 6.1.2 EtherChannel Overview
+EtherChannel was created by Cisco to link multiple Ethernet ports between switches into one logical connection, known as a **port channel**. This virtual interface groups multiple physical ports into a single channel.
+
+---
+
+## 6.1.3 Benefits of EtherChannel
+- **Simplified Configuration**: Configure the entire EtherChannel instead of each port.
+- **Enhanced Bandwidth**: Uses existing ports without requiring expensive upgrades.
+- **Load Balancing**: Distributes traffic across the links in the EtherChannel.
+- **STP Efficiency**: Sees the EtherChannel as one link, so all ports stay active without STP blocking.
+- **Redundancy**: If one link fails, EtherChannel remains operational.
+
+---
+
+## 6.1.4 Implementation Rules
+On Catalyst 2960 switches:
+- Mix of interface types (e.g., Fast Ethernet and Gigabit Ethernet) in a single EtherChannel isn’t allowed.
+- Supports up to 8 ports per EtherChannel, giving up to 8 Gbps bandwidth for Gigabit Ethernet.
+- Each port in an EtherChannel must be set consistently on both ends (e.g., trunks must match, same VLAN).
+- Supports up to 6 EtherChannels per switch.
+
+---
+
+## 6.1.5 AutoNegotiation Protocols
+EtherChannel can form automatically through **Port Aggregation Protocol (PAgP)** or **Link Aggregation Control Protocol (LACP)**, which negotiate the channel setup between switches.
+
+---
+
+## 6.1.6 PAgP Operation
+PAgP is a Cisco protocol for automating EtherChannel creation. It monitors for configuration consistency and detects if ports can be grouped. PAgP modes include:
+- **On**: Forces channel creation without negotiation.
+- **Desirable**: Actively initiates negotiations.
+- **Auto**: Passively waits for the other end to initiate.
+
+---
+
+## 6.1.8 LACP Operation
+LACP is an IEEE standard for cross-vendor compatibility, similar to PAgP. LACP modes include:
+- **On**: Forces a channel without negotiation.
+- **Active**: Starts the negotiation.
+- **Passive**: Waits to respond to negotiation requests.
+
+Both protocols ensure ports on both sides are compatible, enabling smooth link formation.
+
+---
+
+# 6.2 Configure EtherChannel
+
+EtherChannel bundles multiple physical links into a single logical connection for improved bandwidth and redundancy. Here's how to set it up and ensure it functions smoothly:
+
+---
+
+## 6.2.1 Configuration Guidelines
+
+1. **EtherChannel Support:** Ensure all interfaces can support EtherChannel.
+2. **Speed & Duplex Matching:** All interfaces in an EtherChannel must have the same speed and duplex settings.
+3. **VLAN Consistency:** All interfaces must be in the same VLAN or be configured as trunks. If they are different, EtherChannel won’t form.
+4. **Port Channel Configuration:** Set parameters (e.g., VLANs, speed) directly on the port channel to apply them across all bundled interfaces.
+
+> **Note:** Configurations applied to individual interfaces may cause compatibility issues if they differ from the port channel’s settings.
+
+---
+
+## 6.2.2 Example - Configuring EtherChannel with LACP
+
+To set up EtherChannel using LACP (Link Aggregation Control Protocol), follow these steps:
+
+1. **Select Interfaces:**
+   - Use the `interface range` command to select multiple ports simultaneously.
+   
+2. **Create Port Channel:**
+   - Use `channel-group [ID] mode active` to create a port channel in LACP mode.
+   
+3. **Configure as Trunk:**
+   - Set the port channel to trunk mode if necessary, and specify allowed VLANs.
+
+**Example Configuration for S1 (with FastEthernet ports 0/1 and 0/2):**
+
+```shell
+S1(config)# interface range FastEthernet 0/1 - 2
+S1(config-if-range)# channel-group 1 mode active
+Creating a port-channel interface Port-channel 1
+S1(config-if-range)# exit
+S1(config)# interface port-channel 1
+S1(config-if)# switchport mode trunk
+S1(config-if)# switchport trunk allowed vlan 1,2,20
+```
+
+In this setup:
+- `channel-group 1 mode active` initiates LACP.
+- `switchport mode trunk` configures the channel for trunking.
+- `switchport trunk allowed vlan 1,2,20` specifies VLANs that the EtherChannel allows.
+
+---
+
+## 6.2.3 Syntax Checker - Example for Configuring S2
+
+To configure EtherChannel for S2 on ports FastEthernet 0/1 and 0/2, use the following command:
+
+```shell
+S2(config)# interface range FastEthernet 0/1 - 2
+```
+
+---
+
+This setup ensures EtherChannel between S1 and S2 with consistent settings, making it active for load sharing and redundancy.
