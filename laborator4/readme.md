@@ -156,6 +156,17 @@ PAgP is a Cisco protocol for automating EtherChannel creation. It monitors for c
 
 ---
 
+## 6.1.7 PAgP Mode Settings Example
+Consider the two switches in the figure. Whether S1 and S2 establish an EtherChannel using PAgP depends on the mode settings on each side of the channel.
+
+![image](https://github.com/user-attachments/assets/3004fbd2-e4a5-401e-855f-1b2e94d7265b)
+
+The table shows the various combination of PAgP modes on S1 and S2 and the resulting channel establishment outcome.
+
+![image](https://github.com/user-attachments/assets/23d449be-0d31-432b-ad8b-0773515d696b)
+
+---
+
 ## 6.1.8 LACP Operation
 LACP is an IEEE standard for cross-vendor compatibility, similar to PAgP. LACP modes include:
 - **On**: Forces a channel without negotiation.
@@ -163,6 +174,53 @@ LACP is an IEEE standard for cross-vendor compatibility, similar to PAgP. LACP m
 - **Passive**: Waits to respond to negotiation requests.
 
 Both protocols ensure ports on both sides are compatible, enabling smooth link formation.
+
+---
+
+## 6.1.9 LACP Mode Settings Example
+
+Consider the two switches in the figure. Whether S1 and S2 establish an EtherChannel using LACP depends on the mode settings on each side of the channel.
+
+![image](https://github.com/user-attachments/assets/1d81c5b5-b506-4eec-b0e3-a2a7d89925f1)
+
+The table shows the various combination of LACP modes on S1 and S2 and the resulting channel establishment outcome.
+
+![image](https://github.com/user-attachments/assets/fcecde25-a121-4eb5-b9e9-fd18cff1c99d)
+
+
+---
+
+# LACP VS PAgP
+
+### 1. **Standardization**
+   - **PAgP**: A Cisco-proprietary protocol, meaning it only works between Cisco devices (or some Cisco-compatible equipment).
+   - **LACP**: An open standard protocol defined by IEEE (IEEE 802.3ad), which allows it to work across devices from different vendors.
+
+### 2. **Modes of Operation**
+   - **PAgP Modes**:
+     - **Auto**: The port will automatically negotiate EtherChannel if the other end is in the desirable mode.
+     - **Desirable**: Actively initiates the formation of an EtherChannel if the other end is set to auto or desirable mode.
+   - **LACP Modes**:
+     - **Active**: Actively attempts to negotiate the EtherChannel with the other side.
+     - **Passive**: Forms an EtherChannel only if the other end is in active mode. It does not initiate the connection on its own.
+
+### 3. **Compatibility**
+   - **PAgP**: Limited to Cisco devices due to its proprietary nature.
+   - **LACP**: Works across various vendor devices, making it the preferred choice in multi-vendor environments.
+
+### 4. **Max Number of Links in an EtherChannel**
+   - **PAgP**: Can support up to 8 active links.
+   - **LACP**: Can support up to 16 links, with 8 active links and 8 in standby mode, ready to become active if one fails.
+
+### 5. **Link Management**
+   - **PAgP**: Offers limited monitoring of links.
+   - **LACP**: Provides more robust link management. It can dynamically detect link failures and activate standby links if needed.
+
+### Summary
+
+In essence:
+- **PAgP** is best suited for networks with Cisco devices only.
+- **LACP** is more versatile and preferred for interoperability in networks with devices from multiple vendors.
 
 ---
 
@@ -176,10 +234,10 @@ EtherChannel bundles multiple physical links into a single logical connection fo
 
 1. **EtherChannel Support:** Ensure all interfaces can support EtherChannel.
 2. **Speed & Duplex Matching:** All interfaces in an EtherChannel must have the same speed and duplex settings.
-3. **VLAN Consistency:** All interfaces must be in the same VLAN or be configured as trunks. If they are different, EtherChannel won’t form.
-4. **Port Channel Configuration:** Set parameters (e.g., VLANs, speed) directly on the port channel to apply them across all bundled interfaces.
+3. **VLAN Match:** All interfaces must be in the same VLAN or be configured as trunks. If they are different, EtherChannel won’t form.
+4. **Range of VLANs:** Set parameters (e.g., VLANs, speed) directly on the port channel to apply them across all bundled interfaces.
 
-> **Note:** Configurations applied to individual interfaces may cause compatibility issues if they differ from the port channel’s settings.
+**Note:** Configurations applied to individual interfaces may cause compatibility issues if they differ from the port channel’s settings.
 
 ---
 
@@ -212,20 +270,6 @@ In this setup:
 - `channel-group 1 mode active` initiates LACP.
 - `switchport mode trunk` configures the channel for trunking.
 - `switchport trunk allowed vlan 1,2,20` specifies VLANs that the EtherChannel allows.
-
----
-
-## 6.2.3 Syntax Checker - Example for Configuring S2
-
-To configure EtherChannel for S2 on ports FastEthernet 0/1 and 0/2, use the following command:
-
-```shell
-S2(config)# interface range FastEthernet 0/1 - 2
-```
-
----
-
-To verify and troubleshoot EtherChannel configurations, follow these steps:
 
 ---
 
@@ -277,18 +321,97 @@ If the EtherChannel is not operational, use these steps to identify and fix the 
 
    ```shell
    S1# show etherchannel summary
+   Flags:  D - down        P - bundled in port-channel
+        I - stand-alone s - suspended
+        H - Hot-standby (LACP only)
+        R - Layer3      S - Layer2
+        U - in use      N - not in use, no aggregation
+        f - failed to allocate aggregator
+        M - not in use, minimum links not met
+        m - not in use, port not aggregated due to minimum links not met
+        u - unsuitable for bundling
+        w - waiting to be aggregated
+        d - default port
+        A - formed by Auto LAG
+   Number of channel-groups in use: 1
+   Number of aggregators:           1
    Group  Port-channel  Protocol    Ports
+   ------+-------------+-----------+-----------------------------------------------
    1      Po1(SD)         -      Fa0/1(D)    Fa0/2(D)
    ```
 
 2. **Check Port Channel Configuration**:
-   - Review the configuration with `show etherchannel port-channel` to confirm all settings are consistent.
+   - Review the configuration with `show run | begin interface port-channel ` to view if there are incompatible PAgP modes configured on S1 and S2.
+```
+S1# show run | begin interface port-channel
+interface Port-channel1
+ switchport trunk allowed vlan 1,2,20
+ switchport mode trunk
+!
+interface FastEthernet0/1
+ switchport trunk allowed vlan 1,2,20
+ switchport mode trunk
+ channel-group 1 mode on
+!
+interface FastEthernet0/2
+ switchport trunk allowed vlan 1,2,20
+ switchport mode trunk
+ channel-group 1 mode on
+!======================================
+S2# show run | begin interface port-channel
+interface Port-channel1
+ switchport trunk allowed vlan 1,2,20
+ switchport mode trunk
+!
+interface FastEthernet0/1
+ switchport trunk allowed vlan 1,2,20
+ switchport mode trunk
+ channel-group 1 mode desirable
+!
+interface FastEthernet0/2
+ switchport trunk allowed vlan 1,2,20
+ switchport mode trunk
+ channel-group 1 mode desirable    
+```
 
 3. **Correct Misconfigurations**:
    - Reconfigure any mismatched settings (e.g., VLANs, speed, duplex, or trunking mode).
+```
+S1(config)# no interface port-channel 1
+S1(config)# interface range fa0/1 - 2
+S1(config-if-range)# channel-group 1 mode desirable
+Creating a port-channel interface Port-channel 1
+S1(config-if-range)# no shutdown
+S1(config-if-range)# exit
+S1(config)# interface port-channel 1
+S1(config-if)# switchport mode trunk
+S1(config-if)# end
+S1# 
+```
 
 4. **Verify EtherChannel is Operational**:
-   - After adjustments, run `show etherchannel summary` or `show interfaces port-channel` again to confirm the EtherChannel is now active.
+   - After adjustments, run `show etherchannel summary` again to confirm the EtherChannel is now active.
+
+```
+S1# show etherchannel summary
+Flags:  D - down        P - bundled in port-channel
+        I - stand-alone s - suspended
+        H - Hot-standby (LACP only)
+        R - Layer3      S - Layer2
+        U - in use      N - not in use, no aggregation
+        f - failed to allocate aggregator
+        M - not in use, minimum links not met
+        m - not in use, port not aggregated due to minimum links not met
+        u - unsuitable for bundling
+        w - waiting to be aggregated
+        d - default port
+        A - formed by Auto LAG
+Number of channel-groups in use: 1
+Number of aggregators:           1
+Group  Port-channel  Protocol    Ports
+------+-------------+-----------+-----------------------------------------------
+1      Po1(SU)         PAgP      Fa0/1(P)    Fa0/2(P)
+```
 
 ---
 
