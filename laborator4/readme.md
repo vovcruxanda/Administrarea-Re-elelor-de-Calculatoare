@@ -3,20 +3,32 @@
 ## 5.1.1 Redundancy in Layer 2 Switched Networks
 Redundancy provides backup paths to ensure network functionality if one path fails. However, extra paths can lead to problems like loops, where data continuously circulates without reaching its destination. Ethernet networks need a loop-prevention mechanism to avoid these physical and logical Layer 2 loops. A loop-free topology with a single path between any two devices is essential to prevent frame propagation until a link is disrupted and breaks the loop.
 
+---
+
 ## 5.1.2 Spanning Tree Protocol (STP)
 STP prevents loops by creating a loop-free network. It finds the best path for data and blocks other unnecessary paths, enabling redundancy without causing data loops.
+
+---
 
 ## 5.1.3 STP Recalculation
 If a network link fails, STP recalculates the optimal data path and adjusts the network to ensure continued data flow.
 
+---
+
 ## 5.1.4 Issues with Redundant Switch Links
 Without STP, multiple device paths cause loops, overloading switches and degrading network performance. Ethernet lacks a Layer 3 packet-limiting mechanism, making STP essential for loop prevention. A Layer 2 loop can cause MAC table instability, link saturation, and high CPU usage on devices, rendering the network unusable.
+
+---
 
 ## 5.1.5 Layer 2 Loops
 Without STP, data may get trapped in a loop, circulating the network indefinitely, which overloads the network and causes instability.
 
+---
+
 ## 5.1.6 Broadcast Storm
 A broadcast storm floods the network with excessive broadcast packets, often caused by hardware issues or Layer 2 loops. In Layer 2, broadcast messages (e.g., ARP requests) can continuously circulate, consuming resources and leading to network crashes. STP blocks certain paths to prevent loops and broadcast storms.
+
+---
 
 ## 5.1.7 The Spanning Tree Algorithm (STA)
 STP uses an algorithm developed by Radia Perlman to create a loop-free network. It designates a "root bridge" and calculates the best path, blocking any paths that may create loops.
@@ -213,4 +225,71 @@ S2(config)# interface range FastEthernet 0/1 - 2
 
 ---
 
-This setup ensures EtherChannel between S1 and S2 with consistent settings, making it active for load sharing and redundancy.
+To verify and troubleshoot EtherChannel configurations, follow these steps:
+
+---
+
+# 6.3 Verify and Troubleshoot EtherChannel
+
+## 6.3.1 Verify EtherChannel
+
+1. **Verify Port Channel Status**:
+   - Use the `show interfaces port-channel` command to check the status of the port channel. If the output shows “Port-channel1 is up, line protocol is up (connected),” it indicates that the EtherChannel is operational.
+
+   ```shell
+   S1# show interfaces port-channel 1
+   Port-channel1 is up, line protocol is up (connected)
+   ```
+
+2. **Check EtherChannel Summary**:
+   - Use the `show etherchannel summary` command to get a quick overview of the status of all EtherChannel groups on the device. Look for flags that indicate whether the EtherChannel is up or down and if any ports are not correctly bundled.
+
+   ```shell
+   S1# show etherchannel summary
+   ```
+
+3. **Inspect Port Channel Configuration**:
+   - The `show etherchannel port-channel` command displays more specific configuration details for the port channels.
+   
+4. **View Interfaces within EtherChannel**:
+   - The `show interfaces etherchannel` command helps verify the individual status of interfaces within the EtherChannel.
+
+---
+
+## 6.3.2 Common EtherChannel Issues
+
+1. **Mismatched Configurations**:
+   - **VLAN Consistency**: Ensure all interfaces in the EtherChannel are assigned to the same VLAN or configured as trunks with identical allowed VLAN ranges.
+   - **Trunk Configuration Consistency**: All interfaces should either be trunks or access ports with the same mode.
+   - **Dynamic Protocol Configuration**: Make sure PAgP or LACP configurations are compatible on both ends (e.g., both in `active` or `desirable` mode).
+
+2. **Protocol Confusion**:
+   - Be careful not to confuse PAgP or LACP (for link aggregation) with DTP (for automating trunk creation).
+
+---
+
+## 6.3.3 Troubleshooting EtherChannel Example
+
+If the EtherChannel is not operational, use these steps to identify and fix the issue:
+
+1. **View EtherChannel Summary**:
+   - The `show etherchannel summary` output flags can indicate issues. In the example, the flags for Port-channel 1 show `(SD)`, which indicates that the port is down.
+
+   ```shell
+   S1# show etherchannel summary
+   Group  Port-channel  Protocol    Ports
+   1      Po1(SD)         -      Fa0/1(D)    Fa0/2(D)
+   ```
+
+2. **Check Port Channel Configuration**:
+   - Review the configuration with `show etherchannel port-channel` to confirm all settings are consistent.
+
+3. **Correct Misconfigurations**:
+   - Reconfigure any mismatched settings (e.g., VLANs, speed, duplex, or trunking mode).
+
+4. **Verify EtherChannel is Operational**:
+   - After adjustments, run `show etherchannel summary` or `show interfaces port-channel` again to confirm the EtherChannel is now active.
+
+---
+
+Using these steps and commands, you should be able to verify and troubleshoot EtherChannel configurations effectively.
