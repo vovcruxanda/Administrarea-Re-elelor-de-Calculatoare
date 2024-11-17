@@ -1,3 +1,237 @@
+# 7. DHCPv4
+
+## 7.1 DHCPv4 Concepts
+
+### **7.1.1 DHCPv4 Server and Client**
+Dynamic Host Configuration Protocol for IPv4 (DHCPv4) automates the assignment of IPv4 addresses and network configuration parameters. Its benefits include scalability and ease of management, especially in networks with numerous desktop clients. 
+
+Key Points:
+- **DHCPv4 Server**: Dynamically assigns IPv4 addresses from a pool for a configurable lease duration.
+- **Lease Renewal**: Clients renew their leases upon expiration, ensuring unused addresses return to the pool.
+- **Cisco Routers**: Can act as DHCPv4 servers, eliminating the need for a separate server in smaller networks.
+
+
+### **7.1.2 DHCPv4 Operation**
+The client/server model ensures efficient IPv4 address allocation. The DHCPv4 process involves leasing addresses, requiring clients to periodically contact the server to renew or extend their leases.
+
+
+### **7.1.3 Steps to Obtain a Lease**
+1. **DHCP Discover (DHCPDISCOVER)**:
+   - The client sends a broadcast message to locate available DHCPv4 servers.
+   - Uses Layer 2 and Layer 3 broadcasts due to the absence of initial IPv4 configuration.
+
+2. **DHCP Offer (DHCPOFFER)**:
+   - Servers respond to the client's DHCPDISCOVER with an available IPv4 address and configuration options.
+
+3. **DHCP Request (DHCPREQUEST)**:
+   - The client broadcasts a request to accept the offered address from one server.
+
+4. **DHCP Acknowledgment (DHCPACK)**:
+   - The chosen server confirms the lease by providing final acknowledgment.
+
+
+### **7.1.4 Steps to Renew a Lease**
+Before the lease expires, clients undergo a two-step renewal process:
+1. **DHCP Request (DHCPREQUEST)**:
+   - A direct unicast message is sent to the original server to renew the lease. If no response, the client broadcasts another DHCPREQUEST.
+
+2. **DHCP Acknowledgment (DHCPACK)**:
+   - The server verifies and acknowledges the renewal request with a unicast message.
+
+This approach ensures that addresses are efficiently allocated and minimizes potential conflicts in dynamic environments.
+
+---
+
+## 7.2 Configure a Cisco IOS DHCPv4 Server
+
+The configuration and explanation provided are for setting up a Cisco IOS DHCPv4 server and understanding its functionality. Here's a concise breakdown of the important steps:
+
+
+### **Steps to Configure a Cisco IOS DHCPv4 Server**
+
+#### 1. **Exclude IPv4 Addresses**  
+   Reserve specific addresses (like for gateways, DNS servers, and other static devices) to prevent them from being dynamically assigned:
+   ```
+   Router(config)# ip dhcp excluded-address <low-address> [high-address]
+   ```
+
+   **Example:**
+   ```bash
+   R1(config)# ip dhcp excluded-address 192.168.11.1 192.168.11.9
+   R1(config)# ip dhcp excluded-address 192.168.11.254
+   ```
+
+
+
+#### 2. **Define a DHCPv4 Pool Name**  
+   Create a named pool of addresses for DHCP assignments:
+   ```bash
+   Router(config)# ip dhcp pool <pool-name>
+   ```
+
+
+
+#### 3. **Configure the DHCPv4 Pool**  
+   Within the DHCPv4 configuration mode (`Router(dhcp-config)#`), set up key parameters:
+   - Define the network range:
+     ```
+     network <network-address> <subnet-mask>
+     ```
+   - Specify the default gateway:
+     ```
+     default-router <gateway-address>
+     ```
+   - Set the DNS server:
+     ```
+     dns-server <dns-address>
+     ```
+   - (Optional) Assign a domain name:
+     ```
+     domain-name <domain-name>
+     ```
+   - (Optional) Customize the lease duration:
+     ```
+     lease <days> <hours> <minutes>
+     ```
+
+   **Example:**
+   ```bash
+   R1(config)# ip dhcp pool LAN-POOL-2
+   R1(dhcp-config)# network 192.168.11.0 255.255.255.0
+   R1(dhcp-config)# default-router 192.168.11.1
+   R1(dhcp-config)# dns-server 192.168.11.5
+   R1(dhcp-config)# domain-name example.com
+   ```
+
+
+
+### **Verification Commands**
+
+1. **Show running configuration related to DHCP:**
+   ```bash
+   R1# show running-config | section dhcp
+   ```
+
+2. **View DHCP bindings (assigned IPs):**
+   ```bash
+   R1# show ip dhcp binding
+   ```
+
+3. **Check DHCP statistics:**
+   ```bash
+   R1# show ip dhcp statistics
+   ```
+
+
+
+### **Disabling the DHCPv4 Service**  
+To disable or enable DHCP on the router:
+- Disable:
+  ```bash
+  R1(config)# no service dhcp
+  ```
+- Enable:
+  ```bash
+  R1(config)# service dhcp
+  ```
+
+
+### **Configuring DHCPv4 Relay**  
+In scenarios where the DHCP server is on a different subnet, configure the router to forward DHCP messages using:
+```bash
+Router(config-if)# ip helper-address <dhcp-server-address>
+```
+
+**Verification:**  
+- Check interfaces forwarding DHCP requests:
+  ```bash
+  R1# show ip interface
+  ```
+
+
+### **Summary of Commands**
+
+| **Command**                    | **Description**                                             |
+|--------------------------------|-------------------------------------------------------------|
+| `ip dhcp excluded-address`     | Exclude specific IPs from being dynamically assigned.       |
+| `ip dhcp pool`                 | Create a named DHCP address pool.                          |
+| `default-router`               | Define the default gateway for the pool.                   |
+| `dns-server`                   | Specify DNS server IP for clients.                         |
+| `domain-name`                  | Assign a domain name for DHCP clients.                     |
+| `ip helper-address`            | Configure DHCP relay to forward requests to the server.    |
+
+This configuration ensures a functional DHCPv4 setup on Cisco IOS devices for assigning IPs dynamically to connected devices in a network.
+
+---
+
+## 7.3 Configure a DHCPv4 Client
+
+### Configuring a Cisco Router as a DHCPv4 Client
+
+Cisco routers, particularly in small office/home office (SOHO) setups, can act as DHCPv4 clients to obtain IP configuration details from an ISP's DHCP server. This functionality is especially useful when connecting to a cable or DSL modem.
+
+
+### **Steps to Configure a Router as a DHCPv4 Client**
+
+1. **Access the Interface**:
+   - Use the `interface` command to select the Ethernet interface connecting to the modem (e.g., `G0/0/1`).
+
+2. **Set IP Address to DHCP**:
+   - Apply the `ip address dhcp` command in interface configuration mode to enable DHCP on the interface.
+
+3. **Activate the Interface**:
+   - Use the `no shutdown` command to bring the interface up.
+
+
+### **Configuration Example**
+
+```plaintext
+SOHO(config)# interface G0/0/1
+SOHO(config-if)# ip address dhcp
+SOHO(config-if)# no shutdown
+```
+
+**Result**:
+Once the interface is configured, the router will send a DHCP request to obtain an IP address and related configuration from the ISP. For example:
+
+```plaintext
+%DHCP-6-ADDRESS_ASSIGN: Interface GigabitEthernet0/0/1 assigned DHCP address 209.165.201.12, mask 255.255.255.224, hostname SOHO
+```
+
+
+### **Verification**
+
+To confirm the DHCP configuration and address assignment, use:
+
+```plaintext
+SOHO# show ip interface g0/0/1
+```
+
+**Sample Output**:
+```plaintext
+GigabitEthernet0/0/1 is up, line protocol is up
+  Internet address is 209.165.201.12/27
+  Broadcast address is 255.255.255.255
+  Address determined by DHCP
+```
+
+
+
+### **Home Router Configuration**
+
+For home routers, most are pre-configured to act as DHCPv4 clients. The WAN interface settings typically default to "Automatic Configuration - DHCP" for ease of connection with an ISP. 
+
+For example, in **Packet Tracer**, the default WAN settings page will have options to automatically retrieve IP details via DHCP when connected to a DSL or cable modem.
+
+
+### Key Notes:
+- **Broadcast Address**: The broadcast address will likely be `255.255.255.255` for DHCP requests.
+- **Automatic Assignment**: Home and consumer-grade routers simplify this process by defaulting to DHCP for the WAN interface.
+
+This setup ensures that the router seamlessly integrates into the ISP network, providing internet access to connected devices.
+
+---
+
 # 8. SLAAC and DHCPv6
 
 ## 8.1 IPv6 GUA Assignment
