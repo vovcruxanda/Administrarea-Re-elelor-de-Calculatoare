@@ -1,3 +1,181 @@
+Pentru examenul de la secțiunea 10.1 *Endpoint Security*, iată principalele puncte pe care trebuie să le știi: 
+
+---
+
+### **10.1 Endpoint Security**
+
+#### **10.1.1 Atacuri în Rețea Astăzi**
+1. **DDoS (Distributed Denial of Service)**: 
+   - Atac masiv care copleșește rețeaua și împiedică accesul la un serviciu/website.
+2. **Breșe de Date**: 
+   - Furt de date sensibile de pe servere sau dispozitive.
+3. **Malware**: 
+   - Programe rău intenționate, cum ar fi ransomware, care pot bloca sau deteriora datele.
+
+---
+
+#### **10.1.2 Dispozitive de Securitate în Rețea**
+1. **Router cu VPN**: 
+   - Asigură conexiuni sigure pentru utilizatorii care accesează rețeaua de la distanță.
+2. **NGFW (Next-Generation Firewall)**: 
+   - Monitorizează și protejează împotriva amenințărilor externe.
+3. **NAC (Network Access Control)**: 
+   - Controlează cine poate accesa rețeaua.
+
+---
+
+#### **10.1.3 Protecția Endpoint-urilor**
+1. Dispozitive vulnerabile: laptopuri, telefoane, servere, etc.
+2. Soluții de protecție:
+   - **NAC**: Controlează accesul la rețea.
+   - **AMP (Advanced Malware Protection)**: Protecție împotriva malware-ului.
+   - **ESA (Email Security Appliance)**: Protejează email-urile de phishing.
+   - **WSA (Web Security Appliance)**: Protejează împotriva amenințărilor web.
+
+---
+
+#### **10.1.4 Cisco ESA (Email Security Appliance)**
+1. Blochează amenințările cunoscute și elimină malware-ul.
+2. Respinge email-urile cu link-uri periculoase.
+3. Se actualizează la fiecare 3-5 minute cu informații noi despre amenințări.
+
+---
+
+#### **10.1.5 Cisco WSA (Web Security Appliance)**
+1. Controlează traficul web, blocând site-urile periculoase.
+2. Filtrează activitățile web conform regulilor organizației.
+3. Scanează și blochează site-uri și conținut malițios.
+
+---
+
+### **10.2 Controlul Accesului**
+1. **Autentificare simplă cu parolă locală**:
+   - Este vulnerabilă deoarece parola este trimisă necriptată.
+   - Alternativă: **SSH (Secure Shell)** pentru criptarea autentificării.
+
+2. **Componente AAA (Authentication, Authorization, Accounting)**:
+   - **Authentication**: Confirmă identitatea utilizatorului.
+   - **Authorization**: Determină ce poate face utilizatorul.
+   - **Accounting**: Înregistrează activitatea utilizatorului.
+
+3. **802.1X Protocol**:
+   - Controlează accesul în rețea prin autentificare:
+     - *Supplicant*: Dispozitivul care cere acces.
+     - *Authenticator*: Switch-ul care permite accesul.
+     - *Server de Autentificare*: Verifică accesul.
+
+---
+
+### **10.3 Amenințări la Nivelul Layer 2**
+1. **Tipuri de atacuri**:
+   - **MAC Address Spoofing**: Imitarea unui dispozitiv legitim.
+   - **ARP Spoofing**: Redirecționarea traficului.
+   - **VLAN Hopping**: Acces neautorizat între VLAN-uri.
+   - **DHCP Spoofing**: Emiterea de IP-uri false către clienți.
+
+2. **Tehnici de Mitigare**:
+   - Activarea **Port Security**:
+     - Limitarea numărului de adrese MAC pe un port.
+     - Oprirea cadrelor necunoscute.
+   - **VLAN Segmentation**: Reducerea numărului de dispozitive în fiecare domeniu broadcast.
+   - **Dynamic ARP Inspection**: Protecție împotriva ARP spoofing.
+
+3. **Flooding MAC Address Table**:
+   - Atacatorul umple tabelul de adrese MAC cu valori false, ceea ce duce la inundarea traficului.
+   - Soluție: *Port Security*, monitorizarea traficului și segmentarea VLAN-urilor.
+
+---
+Pentru examen, trebuie să fii familiarizat cu conceptele și configurările de securitate descrise. Iată un rezumat structurat:
+
+---
+
+### **11.1 Protejarea porturilor neutilizate**
+1. **Dezactivare porturi neutilizate:**
+   - Comandă: 
+     ```plaintext
+     Switch(config)# interface range fa0/8 - 24
+     Switch(config-if-range)# shutdown
+     ```
+
+### **11.2 Mitigarea atacurilor VLAN Hopping**
+1. **Tipuri de atacuri VLAN hopping:**
+   - **Spoofing DTP:** Mesaje DTP false activează porturile trunk.
+   - **Switch-uri rogue:** Atacatorii adaugă switch-uri neautorizate.
+   - **Double-tagging:** Exploatarea pachetelor VLAN cu etichete duble.
+
+2. **Măsuri de prevenire:**
+   - Dezactivare DTP pe porturi ne-trunk:
+     ```plaintext
+     Switch(config)# switchport mode access
+     ```
+   - Configurare manuală a porturilor trunk:
+     ```plaintext
+     Switch(config)# switchport mode trunk
+     Switch(config)# switchport nonegotiate
+     ```
+   - Schimbarea VLAN-ului nativ:
+     ```plaintext
+     Switch(config)# switchport trunk native vlan 999
+     ```
+
+---
+
+### **11.3 Atacuri DHCP și snooping**
+1. **Mitigare atacuri DHCP Starvation:**
+   - Activare **port security** pentru a limita adresele MAC.
+
+2. **Implementare DHCP Snooping:**
+   - Activare globală:
+     ```plaintext
+     Switch(config)# ip dhcp snooping
+     ```
+   - Configurare porturi de încredere:
+     ```plaintext
+     Switch(config-if)# ip dhcp snooping trust
+     ```
+   - Limitare trafic DHCP pe porturi neautorizate:
+     ```plaintext
+     Switch(config-if-range)# ip dhcp snooping limit rate 6
+     ```
+
+---
+
+### **11.4 Inspecția ARP dinamică (DAI)**
+1. **DAI pentru prevenirea atacurilor ARP:**
+   - Validare pachete ARP folosind tabela DHCP Snooping.
+
+2. **Configurare DAI:**
+   - Activare pentru VLAN-uri specifice:
+     ```plaintext
+     Switch(config)# ip arp inspection vlan 10
+     ```
+   - Configurare porturi de încredere:
+     ```plaintext
+     Switch(config-if)# ip arp inspection trust
+     ```
+
+---
+
+### **11.5 Prevenirea atacurilor STP**
+1. **PortFast:**
+   - Util pentru porturi conectate la dispozitive finale.
+     ```plaintext
+     Switch(config-if)# spanning-tree portfast
+     ```
+
+2. **BPDU Guard:**
+   - Protejează împotriva conectării dispozitivelor neautorizate.
+     ```plaintext
+     Switch(config-if)# spanning-tree bpduguard enable
+     ```
+   - Activare globală:
+     ```plaintext
+     Switch(config)# spanning-tree portfast bpduguard default
+     ```
+
+---
+
+
 **10.1 Endpoint Security**  
 This section explains how to protect devices in a network, focusing on network and endpoint security.
 
